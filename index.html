@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AquaBot-X Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #131313;
+      color: #d1d1d1;
+    }
+    header {
+      background-color: #2b2b2b;
+      padding: 0.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h2 {
+      margin: 0;
+      color: #fff;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+    .card {
+      background-color: #222;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #fff;
+    }
+    .card-sm-wide {
+      grid-column: span 1;
+      height: 150px;
+      width: 355px;
+    }
+    .card-mid {
+      grid-column: span 2;
+      height: 150px;
+    }
+
+
+    /* Garden Tree Count container flex */
+    .garden-tree-container {
+      display: grid;
+      grid-column: span 1;
+      height: 150px;
+      background-color: #2a2a2a;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+      padding: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Terminal style box */
+    .terminal {
+      background-color: #000;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      box-shadow: inset 0 0 10px #00ff00aa;
+      position: relative;
+    }
+
+    /* Terminal bottom-left corner */
+    .terminal::before {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      font-weight: bold;
+      color: #00ff88;
+      font-family: monospace;
+    }
+
+    /* Garden Tree Count input side */
+    .tree-input {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .tree-input input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #1e1e1e;
+      color: #00ff88;
+      font-size: 1rem;
+    }
+
+    .tree-input button {
+      padding: 0.5rem 1rem;
+      background-color: #00ff88;
+      border: none;
+      border-radius: 5px;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .tree-input button:hover {
+      background-color: #00cc6a;
+    }
+
+    /* অন্যান্য স্টাইল অপরিবর্তিত থাকবে */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px; width: 26px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #00ff88;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    canvas {
+      background: #222;
+      width: 100% !important;
+    }
+    #moistureGauge {
+      height: 100px !important;
+    }
+    .battery {
+      font-size: 2rem;
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .battery-icon {
+      width: 30px;
+      height: 20px;
+      border: 2px solid #00ff88;
+      border-radius: 4px;
+      position: relative;
+    }
+    .battery-level {
+      height: 100%;
+      background-color: #00ff88;
+    }
+    .battery-head {
+      position: absolute;
+      right: -6px;
+      top: 4px;
+      width: 4px;
+      height: 12px;
+      background-color: #00ff88;
+      border-radius: 1px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>AquaBot-X</h2>
+    <span>26 July 2024 - 1:30 PM</span>
+  </header>
+
+  <div class="container">
+    <div class="card card-sm-wide">
+      <h3>Soil Moisture</h3>
+      <canvas id="moistureGauge"></canvas>
+    </div>
+
+    <div class="card card-sm-wide">
+      <h3>Location</h3>
+      <div id="map" style="width: 100%; height: 100px; border-radius: 8px;"></div>
+    </div>
+
+    <div class="card card-sm">
+      <h3>Current Temp</h3>
+      <p style="font-size: 2rem; color: #00ff88">84°C</p>
+    </div>
+
+    <div class="card card-sm">
+      <h3>Humidity</h3>
+      <p style="font-size: 2rem; color: #00ff88">62%</p>
+    </div>
+
+    <div class="card card-mid">
+      <h3>Temperature & Humidity</h3>
+      <canvas id="tempHumChart" style="height: 100px;"></canvas>
+    </div>
+
+    <!-- Water Level Section -->
+<div class="card card-mid" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+  <h3>Water Level</h3>
+  <div style="position: relative; width: 120px; height: 120px;">
+    <svg width="120" height="120">
+      <circle cx="60" cy="60" r="50" stroke="#444" stroke-width="10" fill="none" />
+      <circle cx="60" cy="60" r="50" stroke="#00ff88" stroke-width="10" fill="none"
+              stroke-dasharray="314"
+              stroke-dashoffset="157"
+              transform="rotate(-90 60 60)" />
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20px" fill="#00ff88">50%</text>
+    </svg>
+  </div>
+</div>
+
+
+    <!-- Garden Tree Count - split into two side by side -->
+   <!-- Replace your existing Garden Tree Count section with this -->
+
+<!-- Terminal card -->
+<div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
+  <h3 style="color: #fff; margin-bottom: 0.3rem;">Terminal</h3>
+  <div class="terminal" tabindex="0" aria-label="Terminal window" role="region" style="background-color: #000; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 5px; box-shadow: inset 0 0 10px #00ff00aa; padding: 0.5rem; height: 100%; overflow-y: auto;">
+    <p>> Initializing sensors...</p>
+    <p>> Soil moisture stable at 65%</p>
+    <p>> System running normally</p>
+    <p>> Awaiting commands...</p>
+  </div>
+</div>
+
+<!-- Garden Tree Count card -->
+<div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
+  <h3>Garden Tree Count</h3>
+  <input type="number" placeholder="Enter number of trees" style="width: 95.5%; padding: 0.5rem; border-radius: 5px; border: none; background-color: #1e1e1e; color: #00ff88; font-size: 1rem;">
+  <button style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #00ff88; border: none; border-radius: 5px; color: #000; cursor: pointer; font-weight: bold;">Send</button>
+</div>
+
+
+    <div class="card card-sm">
+      <h3>Robot Power</h3>
+      <label class="switch">
+        <input type="checkbox" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="card card-sm">
+      <h3>Battery Status</h3>
+      <div class="battery">
+        <div class="battery-icon">
+          <div class="battery-level" style="width: 63%;"></div>
+          <div class="battery-head"></div>
+        </div>
+        63%
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Analog Meter Style Soil Moisture Gauge
+    const gaugeValue = 65; // % Soil Moisture
+
+    const gaugeChart = new Chart(document.getElementById('moistureGauge'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Moisture', 'Remaining'],
+        datasets: [{
+          data: [gaugeValue, 100 - gaugeValue],
+          backgroundColor: ['#00ff88', '#444'],
+          borderWidth: 0,
+          circumference: 180,
+          rotation: 270,
+          cutout: '70%',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        }
+      },
+      plugins: [{
+        id: 'needle',
+        afterDatasetDraw(chart, args, pluginOptions) {
+          const {ctx, chartArea: {width, height}} = chart;
+          const angle = Math.PI + (Math.PI * (gaugeValue / 100));
+          const cx = chart.getDatasetMeta(0).data[0].x;
+          const cy = chart.getDatasetMeta(0).data[0].y;
+
+          // Draw needle
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(0, -2);
+          ctx.lineTo(80, 0);
+          ctx.lineTo(0, 2);
+          ctx.fillStyle = '#ff4444';
+          ctx.fill();
+          ctx.restore();
+
+          // Center dot
+          ctx.beginPath();
+          ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#ff4444';
+          ctx.fill();
+        }
+      }]
+    });
+
+    // Temperature & Humidity Chart
+    const ctx2 = document.getElementById('tempHumChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: ['12:00', '12:30', '1:00', '1:30'],
+        datasets: [
+          {
+            label: 'Temperature',
+            data: [70, 72, 74, 73],
+            borderColor: '#00ff88',
+            fill: false
+          },
+          {
+            label: 'Humidity',
+            data: [60, 61, 62, 63],
+            borderColor: '#888',
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#fff' } }
+        },
+        scales: {
+          x: { ticks: { color: '#ccc' } },
+          y: { ticks: { color: '#ccc' } }
+        }
+      }
+    });
+
+    // Map Initialization
+    var map = L.map('map').setView([23.8103, 90.4125], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(map);
+    L.marker([23.8103, 90.4125]).addTo(map)
+      .bindPopup('AquaBot-X Location')
+      .openPopup();
+  </script>
+</body>
+</html>
