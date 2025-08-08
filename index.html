@@ -7,22 +7,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+/>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background-color: #131313;
+      background-color: #030303;
       color: #d1d1d1;
     }
     header {
-      background-color: #2b2b2b;
-      padding: 0.5rem 2rem;
+      background-color: #222;
+      padding: 0.3rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    header h2 {
+    header h3 {
       margin: 0;
       color: #fff;
     }
@@ -199,12 +204,107 @@
       background-color: #00ff88;
       border-radius: 1px;
     }
+
+    /* top nav bar css */
+ .navbar-container {
+  background-color: #222;
+  padding: 0.3rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  margin-bottom: 0.1rem;
+}
+
+.navbar-left-section {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  color: #00ff80;
+  font-weight: bold;
+  padding-right: 260px;
+}
+
+.navbar-links .navbar-link {
+  color: #ccc;
+  text-decoration: none;
+  margin-right: 20px;
+  transition: 0.3s;
+}
+
+.navbar-links .navbar-link:hover,
+.navbar-links .navbar-link.active {
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-right-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbar-icons i {
+  margin-right: 15px;
+  font-size: 18px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.navbar-icons i:hover {
+  color: white;
+}
+
+.navbar-datetime {
+  font-size: 14px;
+  text-align: right;
+  line-height: 1.2;
+  color: #aaa;
+}
+
+
   </style>
 </head>
 <body>
+  <header class="navbar-container">
+  <div class="navbar-left-section">
+    <div class="navbar-logo">
+      <i class="fa-solid fa-seedling"></i>
+      <span>AquaNova</span>
+    </div>
+    <nav class="navbar-links">
+      <a href="index.html" class="navbar-link">Dashboard</a>
+      <a href="#" class="navbar-link">Devices & Sensors</a>
+      <a href="#" class="navbar-link">Logs</a>
+      <a href="#" class="navbar-link">Settings</a>
+    </nav>
+  </div>
+    <div class="navbar-datetime">
+      <span>26 July 2024 - 1:30 PM</span>
+    </div>
+  </div>
+</header>
+
+
+
   <header>
-    <h2>AquaBot-X</h2>
-    <span>26 July 2024 - 1:30 PM</span>
+    <h3>AquaBot-X</h3>
+    <div class="navbar-right-section">
+    <div class="navbar-icons">
+      <i class="fa-solid fa-robot"></i>
+      <i class="fa-solid fa-lock"></i>
+      <i class="fa-solid fa-bell"></i>
+      <i class="fa-solid fa-share"></i>
+    </div>
+    </div>
   </header>
 
   <div class="container">
