@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaBot-X Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    /* General Styles */
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+        background: #0a0f1e;
+        color: #eee;
+        overflow-x: hidden;
+    }
+
+    h1, h2, h3 {
+        color: #00ff80;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease-out;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 3em;
+    }
+
+    h2 {
+        margin-top: 40px;
+        border-bottom: 2px solid #00ff80;
+        padding-bottom: 5px;
+    }
+
+    h3 {
+        margin-top: 20px;
+    }
+
+    p {
+        margin: 10px 0;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    .key_sentence {
+        text-align: center;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Animated Image & Video */
+    .image-container, .video-container {
+        text-align: center;
+        margin: 20px 0;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.8s ease-out;
+    }
+
+    .image-container img, .video-container video {
+        max-width: 100%;
+        height: auto;
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(12, 238, 49, 0.664);
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background: rgba(0,0,0,0.7);
+        box-shadow: 0 4px 20px rgba(12, 238, 49, 0.664);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    table th, table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #00ff80;
+        color: #fff;
+    }
+
+    table th {
+        background-color: rgba(0, 255, 88, 0.27);
+        color: #fff;
+    }
+
+    ul {
+        list-style: disc inside;
+        margin-left: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #00ff80;
+        color: #fff;
+        margin-top: 40px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+    }
+
+    /* Technology Background Animation */
+    .tech-bg {
+        position: fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        z-index:0;
+        pointer-events:none;
+        background: black;
+        overflow: hidden;
+    }
+
+    .tech-node {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #00ff80;
+        border-radius: 50%;
+        animation: float 10s linear infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(100vh) translateX(0);}
+        100% { transform: translateY(-10vh) translateX(100vw);}
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        h1 { font-size: 2.2em; }
+        h2 { font-size: 1.5em; }
+    }
+
+</style>
+</head>
+<body>
+<div class="tech-bg" id="tech-bg"></div>
+
+<div class="container">
+    <h1>AquaBot-X</h1>
+    <p class="key_sentence"><strong>AI & IoT Controlled Autonomous Water Supply Robot Capable of Producing Water from Air</strong></p>
+
+    <div class="image-container">
+        <img src="demo.jpg" alt="AquaBot-X Image">
+    </div>
+
+    <h2>1. Introduction</h2>
+    <p>The global freshwater scarcity has reached alarming levels. Especially in rural areas, deserts, war-affected regions, and areas hit by natural disasters, accessing clean water is a severe challenge. Water sources in these areas are either unavailable or contaminated. In such circumstances, the "AquaBot-X" project can play a crucial role as an effective, sustainable, and environmentally friendly solution.</p>
+    <p>This project involves an autonomous robot that intelligently produces water from the air and supplies it automatically to disaster-prone areas, remote villages, military camps, and agricultural lands. The robot operates efficiently using line-following, obstacle avoidance, and AI technology. Additionally, through IoT-based control and monitoring, the robot's location, water supply information, and environmental data can be observed in real-time. This project is eco-friendly, economical, and a modern solution to combat water scarcity. Notably, the currently presented robot primarily centers around a smart garden system, capable of automatically tending to plants.</p>
+
+    <h2>2. Project Objectives</h2>
+    <ul>
+        <li>To create a fully autonomous, technology-driven system to address the scarcity of clean water.</li>
+        <li>To provide water in areas where traditional water sources are absent or contaminated.</li>
+        <li>To assist in fulfilling urgent water needs during natural disasters.</li>
+        <li>To develop an eco-friendly and renewable energy-based alternative system.</li>
+    </ul>
+
+    <h2>3. Working Principle</h2>
+    <p>The working steps of this system are explained below:</p>
+    <h3>3.1 Robot Navigation & Object Detection</h3>
+    <p>The robot follows a predefined path using IR sensors. If any obstacle or object is detected, the ultrasonic sensor identifies it and either avoids it or changes the path. Using IR sensors, camera, and AI technology, the robot can recognize humans and objects, enabling it to safely complete its tasks automatically.</p>
+
+    <h3>3.2 Water Condensation</h3>
+    <p>The robot's water condensation unit collects humidity from the air and converts it into water using a Peltier module. A DHT11 sensor measures environmental temperature and humidity. If humidity falls below 60%, water production decreases, and the robot automatically stops to prevent energy waste. The collected water is stored in a tank, where a Water Level Sensor monitors the water quantity. When the tank is full, the condensation unit shuts off automatically to avoid wastage. A UV LED is installed in the tank to disinfect the water by destroying harmful microorganisms' DNA.</p>
+
+    <h3>3.3 Soil Moisture Detection & Water Supply</h3>
+    <p>The robot features a robotic arm equipped with a Soil Moisture Sensor. While moving through the garden, the camera identifies a plant, and the arm places the sensor at the base of the plant to measure soil moisture. If the soil is dry, water is automatically supplied from the robot's reservoir tank. If the soil is already moist, the robot moves to the next plant. After watering all plants as needed, the robot goes idle automatically.</p>
+
+    <h3>3.4 Data Display</h3>
+    <p>While navigating the garden, the robot displays real-time data on an LCD and web dashboard, including temperature & humidity, water level, soil moisture for each plant, battery charge, and live robot location. The live map on the website shows the robot's position. Soil moisture values for each plant are shown in percentages, and plant positions are recorded in the system when detected by the camera. Users can also view whether the robot is currently watering a plant or idle.</p>
+
+    <h3>3.5 Power Supply</h3>
+    <p>The robot uses two separate 12V rechargeable batteries to ensure stable operation. One battery powers the microcontroller, sensors, display, and other low-power devices for uninterrupted signal processing and data transmission. The other powers high-load components such as the Peltier cooler and 12V DC fan. Voltage regulators or converters are used for each device to safely operate at the required voltage. This dual battery system ensures reliable power distribution and prevents interference in control units. Additionally, a solar charging system enables extended off-grid operation.</p>
+
+    <h2>4. Components Used</h2>
+    <table>
+        <tr>
+            <th>Sl. No</th>
+            <th>Component</th>
+            <th>Description / Function</th>
+        </tr>
+        <tr><td>1</td><td>Arduino Uno & ESP32</td><td>Microcontrollers controlling the robot and overall system</td></tr>
+        <tr><td>2</td><td>DHT11 Sensor</td><td>Measures environmental temperature & humidity</td></tr>
+        <tr><td>3</td><td>Water Level Sensor</td><td>Monitors water level in the tank</td></tr>
+        <tr><td>4</td><td>IR Sensor</td><td>Used for line-following and automated water supply</td></tr>
+        <tr><td>5</td><td>Ultrasonic Sensor</td><td>Detects obstacles ahead for avoidance</td></tr>
+        <tr><td>6</td><td>Soil Moisture Sensor</td><td>Measures soil moisture</td></tr>
+        <tr><td>7</td><td>Peltier Module</td><td>Absorbs humidity from air to produce water</td></tr>
+        <tr><td>8</td><td>12V DC Fan</td><td>Assists heat dissipation from Peltier module's hot side</td></tr>
+        <tr><td>9</td><td>LCD Display</td><td>Displays real-time sensor data and system status</td></tr>
+        <tr><td>10</td><td>UV LED</td><td>Disinfects water by destroying harmful microorganisms</td></tr>
+        <tr><td>11</td><td>Water Pump & Tank</td><td>Pumps and delivers water to plants</td></tr>
+        <tr><td>12</td><td>Servo / Robotic Arm</td><td>Helps place Soil Moisture Sensor at plant base</td></tr>
+        <tr><td>13</td><td>Camera Module</td><td>Identifies plants and surrounding environment</td></tr>
+        <tr><td>14</td><td>Motor Driver & DC Motors</td><td>Controls robot movement</td></tr>
+        <tr><td>15</td><td>Rechargeable Battery Pack</td><td>Supplies power to the robot</td></tr>
+        <tr><td>16</td><td>Chassis / Frame</td><td>Physical structure and support for robot</td></tr>
+        <tr><td>17</td><td>BMS (2 units)</td><td>Ensures safe charging & discharging of batteries</td></tr>
+        <tr><td>18</td><td>12V 5A Battery (2 units)</td><td>Main power source</td></tr>
+        <tr><td>19</td><td>5V Solar Panel (Demo)</td><td>Used as renewable energy source</td></tr>
+        <tr><td>20</td><td>TP4056 Charging Module (3 units)</td><td>Used for battery charging</td></tr>
+        <tr><td>21</td><td>3.7V Battery</td><td>Backup power storage, charged via solar panel for demo and off-grid operation</td></tr>
+        <tr><td>22</td><td>Buck Converter</td><td>Voltage regulation</td></tr>
+        <tr><td>23</td><td>MOSFET (IRL540)</td><td>Switching & load control</td></tr>
+        <tr><td>24</td><td>2N2222 Transistor</td><td>Signal amplification & switching</td></tr>
+        <tr><td>25</td><td>LED, Switch, Resistors, etc.</td><td>Additional supporting components</td></tr>
+    </table>
+
+    <h2>5. Future Expansion</h2>
+    <ul>
+        <li>AI-based decision making to automatically determine watering time and amount based on historical data.</li>
+        <li>ROS2 integration for autonomous charging at stations and solar-based self-charging when outdoors.</li>
+        <li>Advanced path planning using LiDAR for precise and smart navigation.</li>
+        <li>Artificial humidity generation using CaCl₂ in low-humidity areas to enhance water production efficiency.</li>
+        <li>Voice & mobile app control for easy operation and monitoring.</li>
+        <li>Cloud-based data logging & analysis for long-term performance improvement.</li>
+        <li>Large-scale implementation and integration with smart grids and modern agricultural technologies.</li>
+        <li>Environmentally and economically optimized operation using energy-efficient technology and effective water production.</li>
+    </ul>
+
+    <h2>6. Current Status</h2>
+    <p>The project is currently prepared as a functional prototype. Limited testing has shown it can be effective in real-world scenarios.</p>
+
+    <h2>7. Conclusion</h2>
+    <p>This project is a smart, eco-friendly, and humanitarian technology initiative. It is not only an educational or research-based project but also has the potential to serve as a practical solution to fulfill basic human needs in the future.</p>
+</div>
+
+<footer>&copy; 2025 AquaBot-X Project</footer>
+
+<script>
+    // Scroll Animation for elements
+    const animateOnScroll = () => {
+        const elements = document.querySelectorAll('h1, h2, h3, p, ul, table, .image-container, .video-container, footer');
+        const triggerBottom = window.innerHeight / 5 * 4;
+
+        elements.forEach(el => {
+            const boxTop = el.getBoundingClientRect().top;
+            if(boxTop < triggerBottom){
+                el.style.opacity = 1;
+                el.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    };
+    window.addEventListener('scroll', animateOnScroll);
+    animateOnScroll();
+
+    // Background tech nodes
+    const techBg = document.getElementById('tech-bg');
+    for(let i=0; i<50; i++){
+        const node = document.createElement('div');
+        node.className = 'tech-node';
+        node.style.top = Math.random()*100 + 'vh';
+        node.style.left = Math.random()*100 + 'vw';
+        node.style.animationDuration = (5+Math.random()*10) + 's';
+        techBg.appendChild(node);
+    }
+</script>
+</body>
+</html>
