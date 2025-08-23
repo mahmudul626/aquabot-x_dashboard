@@ -271,7 +271,7 @@
   font-size: 14px;
   text-align: right;
   line-height: 1.2;
-  color: #aaa;
+  color: #fff;
 }
 
 
@@ -298,7 +298,7 @@
 
 .abx-navbar-icons i {
   font-size: 18px;
-  color: #ccc;
+  color: #ffffff;
 }
 
 .garden {
@@ -379,6 +379,18 @@
     color: black;
     font-weight: bold;
 }
+
+.card-mid svg circle:nth-child(2) {
+  transition: stroke-dashoffset 0.5s ease; /* 0.5s সময় ধরে smooth change হবে */
+}
+
+.battery-level {
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #76ff03);
+  transition: width 0.8s ease-in-out; /* Smooth animation */
+  border-radius: 3px;
+}
+
 
   </style>
 
@@ -650,7 +662,170 @@ onValue(humidityRef, (snapshot) => {
   tempHumChart.update();
 });
 
+//water level section js
 
+const waterLevelRef = ref(db, "waterSensor/percent"); // আপনার path
+
+  const circle = document.querySelector(".card-mid svg circle:nth-child(2)");
+  const text = document.querySelector(".card-mid svg text");
+
+  onValue(waterLevelRef, (snapshot) => {
+    const level = snapshot.val(); // Firebase থেকে 0-100
+    const circumference = 2 * Math.PI * 50; // r = 50
+    const offset = circumference - (level / 100) * circumference;
+
+    circle.style.strokeDashoffset = offset; // circle update
+    text.textContent = `${level}%`;           // text update
+  });
+
+  // Battery status js code here
+
+  const batteryRef = ref(db, "voltageSensor/charge");
+
+  // Elements
+  const batteryLevel = document.getElementById("batteryLevel");
+  const batteryText = document.getElementById("batteryText");
+
+  // Real-time update
+  onValue(batteryRef, (snapshot) => {
+    if (snapshot.exists()) {
+      let value = snapshot.val(); // ধরুন value = 75
+      value = Math.max(0, Math.min(100, value)); // 0–100 এর বাইরে গেলে ঠিক করবে
+
+      // Smooth animation
+      batteryLevel.style.width = value + "%";
+      batteryText.textContent = value + "%";
+
+      // Dynamic color (optional)
+      if (value > 60) {
+        batteryLevel.style.background = "linear-gradient(to right, #4caf50, #76ff03)";
+      } else if (value > 30) {
+        batteryLevel.style.background = "linear-gradient(to right, #ffc107, #ffeb3b)";
+      } else {
+        batteryLevel.style.background = "linear-gradient(to right, #f44336, #ff5722)";
+      }
+    }
+  });
+
+
+  // Robot element
+  const robot = document.getElementById("robot");
+  robot.style.position = "absolute";
+  robot.style.width = "20px";
+  robot.style.height = "20px";
+  robot.style.borderRadius = "50%";
+  robot.style.background = "red";
+  robot.style.transition = "all 0.8s ease"; // smooth animation
+
+  // Get all tree marks
+  const marks = document.querySelectorAll(".mark");
+
+  // Function: Move Robot
+  function moveRobotToTree(treeNumber) {
+    const target = [...marks].find(m => m.innerText === String(treeNumber));
+    if (target) {
+      // Tree er position নেওয়া
+      const rect = target.getBoundingClientRect();
+      const gardenRect = document.querySelector(".garden").getBoundingClientRect();
+
+      const top = rect.top - gardenRect.top;
+      const left = rect.left - gardenRect.left;
+
+      // Robot কে সেই জায়গায় move করাও
+      robot.style.top = (top - 20) + "px";   // adjust value
+      robot.style.left = (left - 5) + "px";  // adjust value
+    }
+  }
+
+  // Firebase থেকে tree number পড়া
+  const treeRef = ref(db, "irSensor/markCount");  // ধরো এখানে number save করা আছে
+  onValue(treeRef, (snapshot) => {
+    const treeNumber = snapshot.val();
+    console.log("Robot Tree Number:", treeNumber);
+    moveRobotToTree(treeNumber);
+  });
+
+
+  //terminal's js code here........
+  const terminal = document.getElementById("terminal");
+
+  // Helper: Print to terminal
+  function logToTerminal(message) {
+    const p = document.createElement("p");
+    const time = new Date().toLocaleTimeString();
+    p.textContent = `> [${time}] ${message}`;
+    terminal.appendChild(p);
+    terminal.scrollTop = terminal.scrollHeight; // auto scroll
+  }
+
+  // Example integration with Firebase Listeners:
+  onValue(humidityRef, (snapshot) => {
+    if (!isConnected) return;
+    const humi = snapshot.val();
+    document.getElementById('humidity').innerHTML = humi + "%";
+    logToTerminal(`Humidity updated: ${humi}%`);
+  });
+
+  onValue(temperatureRef, (snapshot) => {
+    if (!isConnected) return;
+    const temp = snapshot.val();
+    document.getElementById('temperature').innerHTML = temp + "℃";
+    logToTerminal(`Temperature updated: ${temp}℃`);
+  });
+
+  onValue(moistureRef, (snapshot) => {
+    if (!isConnected) return;
+    const value = snapshot.val();
+    logToTerminal(`Soil moisture: ${value}%`);
+  });
+
+  onValue(waterLevelRef, (snapshot) => {
+    const level = snapshot.val();
+    logToTerminal(`Water tank level: ${level}%`);
+  });
+
+  onValue(batteryRef, (snapshot) => {
+    const value = snapshot.val();
+    logToTerminal(`Battery charge: ${value}%`);
+  });
+
+  // Robot position
+  onValue(treeRef, (snapshot) => {
+    const treeNumber = snapshot.val();
+    moveRobotToTree(treeNumber);
+    logToTerminal(`🤖 Robot moved near tree: ${treeNumber}`);
+  });
+
+  // Writing data (example: tree count)
+  sendBtn.addEventListener("click", () => {
+    const treeValue = document.getElementById("treeInput").value;
+    if (treeValue !== "") {
+      set(ref(db, "garden/treeCount"), parseInt(treeValue))
+        .then(() => {
+          logToTerminal(`✅ Tree count updated to: ${treeValue}`);
+        })
+        .catch((err) => {
+          logToTerminal(`❌ Error writing treeCount: ${err.message}`);
+        });
+    }
+  });
+
+  // Robot status update
+  switchElement.addEventListener("change", () => {
+    const status = switchElement.checked ? 1 : 0;
+    set(ledRef, status)
+      .then(() => logToTerminal(`Robot status changed to: ${status === 1 ? "ON" : "OFF"}`))
+      .catch(err => logToTerminal(`Error updating robot status: ${err.message}`));
+  });
+
+  // Connection logs
+  connectBtn.addEventListener("click", () => {
+    if (isConnected) {
+      logToTerminal("❌ Disconnected from Firebase.");
+    } else {
+      logToTerminal("✅ Connected to Firebase.");
+    }
+  });
 
 </script>
 
@@ -802,9 +977,8 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
   <canvas id="tempHumChart" style="height: 100px;"></canvas>
 </div>
 
-
-    <!-- Water Level Section -->
-<div class="card card-mid" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+   <!--water level section-->
+   <div class="card card-mid" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column;">
   <h3>Water Level</h3>
   <div style="position: relative; width: 120px; height: 120px;">
     <svg width="120" height="120">
@@ -819,17 +993,17 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
 </div>
 
 
+
     <!-- Garden Tree Count - split into two side by side -->
    <!-- Replace your existing Garden Tree Count section with this -->
 
 <!-- Terminal card -->
 <div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
   <h3 style="color: #fff; margin-bottom: 0.3rem;">Terminal</h3>
-  <div class="terminal" tabindex="0" aria-label="Terminal window" role="region" style="background-color: #000; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 5px; box-shadow: inset 0 0 10px #00ff00aa; padding: 0.5rem; height: 100%; overflow-y: auto;">
-    <p>> Initializing sensors...</p>
-    <p>> Soil moisture stable at 65%</p>
-    <p>> System running normally</p>
-    <p>> Awaiting commands...</p>
+  <div id="terminal" class="terminal" tabindex="0" aria-label="Terminal window" role="region" 
+       style="background-color: #000; color: #00ff00; font-family: monospace; font-size: 0.85rem; 
+              border-radius: 5px; box-shadow: inset 0 0 10px #00ff00aa; padding: 0.5rem; height: 200px; overflow-y: auto;">
+    <p>> System idle...</p>
   </div>
 </div>
 
@@ -855,52 +1029,15 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
     </div>
 
     <div class="card card-sm">
-      <h3>Battery Status</h3>
-      <div class="battery">
-        <div class="battery-icon">
-          <div class="battery-level" style="width: 50%;"></div>
-          <div class="battery-head"></div>
-        </div>
-        50%
-      </div>
+  <h3>Battery Status</h3>
+  <div class="battery">
+    <div class="battery-icon">
+      <div id="batteryLevel" class="battery-level" style="width: 50%;"></div>
+      <div class="battery-head"></div>
     </div>
+    <span id="batteryText">50%</span>
   </div>
-
-  <!-- <script>
-    // Temperature & Humidity Chart
-    const ctx2 = document.getElementById('tempHumChart').getContext('2d');
-    new Chart(ctx2, {
-      type: 'line',
-      data: {
-        labels: ['12:00', '12:30', '1:00', '1:30'],
-        datasets: [
-          {
-            label: 'Temperature',
-            data: [70, 72, 74, 73],
-            borderColor: '#00ff88',
-            fill: false
-          },
-          {
-            label: 'Humidity',
-            data: [60, 61, 62, 63],
-            borderColor: '#888',
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: '#fff' } }
-        },
-        scales: {
-          x: { ticks: { color: '#ccc' } },
-          y: { ticks: { color: '#ccc' } }
-        }
-      }
-    });
-  </script> -->
-
+</div>
 
 
 <script>
