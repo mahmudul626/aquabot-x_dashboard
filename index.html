@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="Md. Mahmudul Hasan Mabud" />
+  <meta name="Email" content="mdmahmudulhasan1511@gmail.com" />
   <title>AquaBot-X Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -506,11 +508,151 @@
     }
   });
 
+// soil moisture gauge code here----------
+
+//const db = getDatabase();
+const moistureRef = ref(db, "moistureSensor/percent"); // তোমার Firebase path অনুযায়ী ঠিক করো
+
+// 2️⃣ Initial gauge value (default)
+let gaugeValue = 0; // শুরুতে 0, Firebase data এ update হবে
+
+// 3️⃣ Chart declare
+const gaugeChart = new Chart(document.getElementById('moistureGauge'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Moisture', 'Remaining'],
+        datasets: [{
+            data: [gaugeValue, 100 - gaugeValue],
+            backgroundColor: ['#00ff88', '#444'],
+            borderWidth: 0,
+            circumference: 180,
+            rotation: 270,
+            cutout: '70%',
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+        }
+    },
+    plugins: [{
+        id: 'needle',
+        afterDatasetDraw(chart, args, pluginOptions) {
+            const {ctx} = chart;
+            const angle = Math.PI + (Math.PI * (gaugeChart.data.datasets[0].data[0] / 100));
+            const cx = chart.getDatasetMeta(0).data[0].x;
+            const cy = chart.getDatasetMeta(0).data[0].y;
+
+            // Draw needle
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, -2);
+            ctx.lineTo(80, 0);
+            ctx.lineTo(0, 2);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+            ctx.restore();
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+        }
+    }]
+});
+
+// 4️⃣ Firebase থেকে real-time value নাও এবং gauge update করো
+onValue(moistureRef, (snapshot) => {
+    if (!isConnected) return; // ← শুধুমাত্র connected হলে update হবে
+    const value = snapshot.val();
+    if (value !== null && !isNaN(value)) {
+        gaugeChart.data.datasets[0].data[0] = value;
+        gaugeChart.data.datasets[0].data[1] = 100 - value;
+        gaugeChart.update();
+    }
+});
+
+// ---------- Temperature & Humidity Chart ----------
+
+// Chart declare
+const ctx2 = document.getElementById('tempHumChart').getContext('2d');
+const tempHumChart = new Chart(ctx2, {
+  type: 'line',
+  data: {
+    labels: [], // এখানে সময় আসবে
+    datasets: [
+      {
+        label: 'Temperature',
+        data: [],
+        borderColor: '#00ff88',
+        fill: false
+      },
+      {
+        label: 'Humidity',
+        data: [],
+        borderColor: '#888',
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#fff' } } },
+    scales: {
+      x: { ticks: { color: '#ccc' } },
+      y: { ticks: { color: '#ccc' } }
+    }
+  }
+});
+
+// Firebase references
+const humidityRef = ref(db, 'dht11/humidity');
+const temperatureRef = ref(db, 'dht11/temperature');
+
+// Realtime update from Firebase
+onValue(temperatureRef, (snapshot) => {
+  if (!isConnected) return;
+  const temp = snapshot.val();
+  const time = new Date().toLocaleTimeString();
+
+  // push new data
+  tempHumChart.data.labels.push(time);
+  tempHumChart.data.datasets[0].data.push(temp);
+
+  // max 10 points রাখবো
+  if (tempHumChart.data.labels.length > 10) {
+    tempHumChart.data.labels.shift();
+    tempHumChart.data.datasets[0].data.shift();
+    tempHumChart.data.datasets[1].data.shift();
+  }
+
+  tempHumChart.update();
+});
+
+onValue(humidityRef, (snapshot) => {
+  if (!isConnected) return;
+  const hum = snapshot.val();
+  
+  // সর্বশেষ ডেটা index এ humidity push করো
+  if (tempHumChart.data.datasets[1].data.length < tempHumChart.data.labels.length) {
+    // যদি temperature আগে add হয়ে থাকে
+    tempHumChart.data.datasets[1].data.push(hum);
+  } else {
+    // temperature update আসার আগেই humidity এলো
+    tempHumChart.data.datasets[1].data[tempHumChart.data.datasets[1].data.length - 1] = hum;
+  }
+
+  tempHumChart.update();
+});
+
+
+
 </script>
-
-
-
-
 
 </head>
 <body>
@@ -656,9 +798,10 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
 
 
     <div class="card card-mid">
-      <h3>Temperature & Humidity</h3>
-      <canvas id="tempHumChart" style="height: 100px;"></canvas>
-    </div>
+  <h3>Temperature & Humidity</h3>
+  <canvas id="tempHumChart" style="height: 100px;"></canvas>
+</div>
+
 
     <!-- Water Level Section -->
 <div class="card card-mid" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column;">
@@ -723,59 +866,7 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
     </div>
   </div>
 
-  <script>
-    // Analog Meter Style Soil Moisture Gauge
-    const gaugeValue = 65; // % Soil Moisture
-
-    const gaugeChart = new Chart(document.getElementById('moistureGauge'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Moisture', 'Remaining'],
-        datasets: [{
-          data: [gaugeValue, 100 - gaugeValue],
-          backgroundColor: ['#00ff88', '#444'],
-          borderWidth: 0,
-          circumference: 180,
-          rotation: 270,
-          cutout: '70%',
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false }
-        }
-      },
-      plugins: [{
-        id: 'needle',
-        afterDatasetDraw(chart, args, pluginOptions) {
-          const {ctx, chartArea: {width, height}} = chart;
-          const angle = Math.PI + (Math.PI * (gaugeValue / 100));
-          const cx = chart.getDatasetMeta(0).data[0].x;
-          const cy = chart.getDatasetMeta(0).data[0].y;
-
-          // Draw needle
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(angle);
-          ctx.beginPath();
-          ctx.moveTo(0, -2);
-          ctx.lineTo(80, 0);
-          ctx.lineTo(0, 2);
-          ctx.fillStyle = '#ff4444';
-          ctx.fill();
-          ctx.restore();
-
-          // Center dot
-          ctx.beginPath();
-          ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-          ctx.fillStyle = '#ff4444';
-          ctx.fill();
-        }
-      }]
-    });
-
+  <!-- <script>
     // Temperature & Humidity Chart
     const ctx2 = document.getElementById('tempHumChart').getContext('2d');
     new Chart(ctx2, {
@@ -808,7 +899,7 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
         }
       }
     });
-  </script>
+  </script> -->
 
 
 
@@ -928,9 +1019,6 @@ setInterval(fetchInternetTime, 5 * 60 * 1000);
     });
   });
 </script>
-
-
-
 
 </body>
 </html>
