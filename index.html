@@ -381,44 +381,134 @@
   </style>
 
 <script type="module">
-    // Firebase SDK import
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+  // Firebase SDK import
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqU-w8lG5XBNcje1LcGv3k9gQL44UsGDw",
-      authDomain: "aquabot-database.firebaseapp.com",
-      databaseURL: "https://aquabot-database-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "aquabot-database",
-      storageBucket: "aquabot-database.appspot.com",
-      messagingSenderId: "481778623661",
-      appId: "1:481778623661:web:8c7fd8a9b50877a810d224",
-      measurementId: "G-1SPT7LT7Z8"
-    };
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqU-w8lG5XBNcje1LcGv3k9gQL44UsGDw",
+    authDomain: "aquabot-database.firebaseapp.com",
+    databaseURL: "https://aquabot-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "aquabot-database",
+    storageBucket: "aquabot-database.appspot.com",
+    messagingSenderId: "481778623661",
+    appId: "1:481778623661:web:8c7fd8a9b50877a810d224",
+    measurementId: "G-1SPT7LT7Z8"
+  };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    // Get database reference
-    const db = getDatabase(app);
+  // ---------- Connect button logic ----------
+  const connectBtn = document.getElementById("connectBtn");
+  let connected = false;
+  let isConnected = false;
+  let unsubscribers = [];
 
-    // References to humidity and temperature nodes
-    const humidityRef = ref(db, 'dht11/humidity');
-    const temperatureRef = ref(db, 'dht11/temperature');
+  connectBtn.addEventListener("click", () => {
+    if (!connected) {
+      // ---------- CONNECT ----------
+      connected = true;
+      isConnected = true;
+      connectBtn.innerText = "Connected";
+      connectBtn.style.background = "#034426"; 
+      localStorage.setItem("robotConnected", "true");
 
-    // Real-time listener for humidity
-    onValue(humidityRef, (snapshot) => {
-      const humi = snapshot.val();
-      document.getElementById('humidity').innerHTML = humi + "%";
-    });
+      // References to humidity and temperature nodes
+      const humidityRef = ref(db, 'dht11/humidity');
+      const temperatureRef = ref(db, 'dht11/temperature');
 
-    // Real-time listener for temperature
-    onValue(temperatureRef, (snapshot) => {
-      const temp = snapshot.val();
-      document.getElementById('temperature').innerHTML = temp + "&#8451;";
-    });
-  </script>
+      // Real-time listener for humidity
+      const unsubHumidity = onValue(humidityRef, (snapshot) => {
+        if (!isConnected) return;
+        const humi = snapshot.val();
+        document.getElementById('humidity').innerHTML = humi + "%";
+      });
+      unsubscribers.push(unsubHumidity);
+
+      // Real-time listener for temperature
+      const unsubTemperature = onValue(temperatureRef, (snapshot) => {
+        if (!isConnected) return;
+        const temp = snapshot.val();
+        document.getElementById('temperature').innerHTML = temp + "&#8451;";
+      });
+      unsubscribers.push(unsubTemperature);
+
+      // garden tree count section's js
+      const sendBtn = document.getElementById("sendBtn");
+      if (sendBtn) {
+        sendBtn.addEventListener("click", () => {
+          if (!isConnected) return;
+          const treeValue = document.getElementById("treeInput").value;
+          if (treeValue !== "") {
+            set(ref(db, "garden/treeCount"), parseInt(treeValue))
+              .then(() => {
+                console.log("✅ Value sent to Firebase:", treeValue);
+                document.getElementById("treeInput").value = ""; // clear input
+              })
+              .catch((error) => {
+                console.error("❌ Error:", error);
+              });
+          } else {
+            alert("Please enter a value");
+          }
+        });
+      }
+
+      // robot status section's js
+      const ledRef = ref(db, "control/robotStatus");
+      const switchElement = document.querySelector(".card-sm input[type='checkbox']");
+      if (switchElement) {
+        switchElement.addEventListener("change", () => {
+          if (!isConnected) return;
+          const status = switchElement.checked ? 1 : 0;
+          set(ledRef, status)
+            .then(() => console.log("Firebase updated:", status))
+            .catch(err => console.error(err));
+        });
+
+        const unsubRobot = onValue(ledRef, (snapshot) => {
+          if (!isConnected) return;
+          const status = snapshot.val();
+          if (status !== null) {
+            switchElement.checked = (status === 1);
+          }
+        });
+        unsubscribers.push(unsubRobot);
+      }
+
+      console.log("✅ Connected to Firebase!");
+
+    } else {
+      // ---------- DISCONNECT ----------
+      connected = false;
+      isConnected = false;
+      connectBtn.innerText = "Connect";
+      connectBtn.style.background = "#4CAF50";
+      localStorage.setItem("robotConnected", "false");
+
+      // unsubscribe all listeners
+      unsubscribers.forEach(unsub => {
+        try { unsub(); } catch(e) { console.warn("Unsub error:", e); }
+      });
+      unsubscribers = [];
+
+      console.log("❌ Disconnected from Firebase!");
+    }
+  });
+
+  // ---------- Refresh এর পরে আগের state restore ----------
+  window.addEventListener("load", () => {
+    if (localStorage.getItem("robotConnected") === "true") {
+      connectBtn.click(); // আগের মতো আবার connect হবে
+    }
+  });
+
+</script>
+
+
 
 
 
@@ -458,7 +548,7 @@
 <!-- Robot Popup -->
 <div id="abx-window-robot" class="abx-navbar-window">
   <h3 style="margin: 0 0 10px;">🤖 AquaBot-X</h3>
-  <button style="padding:6px 12px; border:none; border-radius:6px; background:#4CAF50; color:white; cursor:pointer;">
+  <button id="connectBtn" style="padding:6px 12px; border:none; border-radius:6px; background:#4CAF50; color:white; cursor:pointer;">
     Connect
   </button>
 </div>
@@ -603,13 +693,18 @@ setTimeout(() => { moveRobotToTree(1); }, 1000);
 <!-- Garden Tree Count card -->
 <div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
   <h3>Garden Tree Count</h3>
-  <input type="number" placeholder="Enter number of trees" style="width: 95.5%; padding: 0.5rem; border-radius: 5px; border: none; background-color: #1e1e1e; color: #00ff88; font-size: 1rem;">
-  <button style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #00ff88; border: none; border-radius: 5px; color: #000; cursor: pointer; font-weight: bold;">Send</button>
+  <input id="treeInput" type="number" placeholder="Enter number of trees" 
+         style="width: 95.5%; padding: 0.5rem; border-radius: 5px; border: none; background-color: #1e1e1e; color: #00ff88; font-size: 1rem;">
+  <button id="sendBtn" 
+          style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #00ff88; border: none; border-radius: 5px; color: #000; cursor: pointer; font-weight: bold;">
+          Send
+  </button>
 </div>
 
 
+
     <div class="card card-sm">
-      <h3>Robot Power</h3>
+      <h3>Robot Status</h3>
       <label class="switch">
         <input type="checkbox" checked />
         <span class="slider"></span>
@@ -826,7 +921,7 @@ setInterval(fetchInternetTime, 5 * 60 * 1000);
     // Copy Link button
     const copyBtn = document.getElementById("abx-copy-btn");
     copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText("https://mahmudul626.github.io/aquabot-x_dashboard/").then(() => {
+      navigator.clipboard.writeText("https://mahmudul626.github.io/aquabot-x_project/").then(() => {
         copyBtn.innerText = "Copied!";
         setTimeout(() => copyBtn.innerText = "Copy Link", 2000);
       });
