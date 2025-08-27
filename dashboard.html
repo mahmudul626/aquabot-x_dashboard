@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="Md. Mahmudul Hasan Mabud" />
+  <meta name="Email" content="mdmahmudulhasan1511@gmail.com" />
+  <title>AquaBot-X Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+/>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #030303;
+      color: #d1d1d1;
+    }
+    header {
+      background-color: #222;
+      padding: 0.3rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h3 {
+      margin: 0;
+      color: #fff;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+    .card {
+      background-color: #222;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #fff;
+    }
+    .card-sm-wide {
+      grid-column: span 1;
+      height: 150px;
+      width: 355px;
+    }
+    .card-mid {
+      grid-column: span 2;
+      height: 150px;
+    }
+
+
+    /* Garden Tree Count container flex */
+    .garden-tree-container {
+      display: grid;
+      grid-column: span 1;
+      height: 150px;
+      background-color: #2a2a2a;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+      padding: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Terminal style box */
+    .terminal {
+      background-color: #000;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      box-shadow: inset 0 0 10px #00ff00aa;
+      position: relative;
+    }
+
+    /* Terminal bottom-left corner */
+    .terminal::before {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      font-weight: bold;
+      color: #00ff88;
+      font-family: monospace;
+    }
+
+    /* Garden Tree Count input side */
+    .tree-input {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .tree-input input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #1e1e1e;
+      color: #00ff88;
+      font-size: 1rem;
+    }
+
+    .tree-input button {
+      padding: 0.5rem 1rem;
+      background-color: #00ff88;
+      border: none;
+      border-radius: 5px;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .tree-input button:hover {
+      background-color: #00cc6a;
+    }
+
+    /* অন্যান্য স্টাইল অপরিবর্তিত থাকবে */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px; width: 26px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #00ff88;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    canvas {
+      background: #222;
+      width: 100% !important;
+    }
+    #moistureGauge {
+      height: 80px !important;
+      width: 80% !important;
+      margin-left: 35px;
+    }
+    .battery {
+      font-size: 2rem;
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .battery-icon {
+      width: 30px;
+      height: 20px;
+      border: 2px solid #00ff88;
+      border-radius: 4px;
+      position: relative;
+    }
+    .battery-level {
+      height: 100%;
+      background-color: #00ff88;
+    }
+    .battery-head {
+      position: absolute;
+      right: -6px;
+      top: 4px;
+      width: 4px;
+      height: 12px;
+      background-color: #00ff88;
+      border-radius: 1px;
+    }
+
+    /* top nav bar css */
+ .navbar-container {
+  background-color: #222;
+  padding: 0.3rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  margin-bottom: 0.1rem;
+}
+
+.navbar-left-section {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  color: #00ff80;
+  font-weight: bold;
+  padding-right: 260px;
+}
+
+.navbar-links .navbar-link {
+  color: #ccc;
+  text-decoration: none;
+  margin-right: 20px;
+  transition: 0.3s;
+}
+
+.navbar-links .navbar-link:hover,
+.navbar-links .navbar-link.active {
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-right-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbar-icons i {
+  margin-right: 15px;
+  font-size: 18px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.navbar-icons i:hover {
+  color: white;
+}
+
+.navbar-datetime {
+  font-size: 14px;
+  text-align: right;
+  line-height: 1.2;
+  color: #fff;
+}
+
+
+.abx-navbar-window {
+  display: none;
+  position: absolute;
+  background: #030303f5;
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  width: 300px;
+  box-shadow: 0 2px 10px rgba(2, 255, 66, 0.39);
+  z-index: 9999;
+
+}
+
+
+.abx-navbar-icons {
+  position: relative;
+  display: flex;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.abx-navbar-icons i {
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.garden {
+    position: relative;
+    width: 295px;   /* আগে ছিল 900px */
+    height: 175px;  /* আগে ছিল 600px */
+    background-color: #d2f5a6; /* grass */
+    border: 3px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: -8px;
+}
+
+
+/* Robot path */
+.path {
+    position: absolute;
+    top: 50px;
+    left: 100px;
+    width: 700px;
+    height: 20px;
+    background-color: #ffeb3b;
+    border-radius: 10px;
+}
+
+/* Trees */
+.tree {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+}
+
+.tree::after {
+    content: attr(data-name);
+    position: absolute;
+    top: 30px;
+    font-size: 12px;
+    color: #000;
+    white-space: nowrap;
+}
+
+/* Black mark squares */
+.mark {
+    position: absolute;
+    width: 13px;
+    height: 14px;
+    background-color: black;
+    color: white;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 2px;
+    margin-left: 6px;
+}
+
+/* Robot icon */
+.robot {
+  position: absolute;
+  width: 10px;
+  height: 15px;
+  background-color: red;
+  border-radius: 50%;
+  top: 15px;
+  left: 18px;
+}
+
+/* Hover effect */
+.garden div:hover::after {
+    content: attr(data-name);
+    color: black;
+    font-weight: bold;
+}
+
+.card-mid svg circle:nth-child(2) {
+  transition: stroke-dashoffset 0.5s ease; /* 0.5s সময় ধরে smooth change হবে */
+}
+
+.battery-level {
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #76ff03);
+  transition: width 0.8s ease-in-out; /* Smooth animation */
+  border-radius: 3px;
+}
+
+
+  </style>
+
+<script type="module">
+  // Firebase SDK import
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqU-w8lG5XBNcje1LcGv3k9gQL44UsGDw",
+    authDomain: "aquabot-database.firebaseapp.com",
+    databaseURL: "https://aquabot-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "aquabot-database",
+    storageBucket: "aquabot-database.appspot.com",
+    messagingSenderId: "481778623661",
+    appId: "1:481778623661:web:8c7fd8a9b50877a810d224",
+    measurementId: "G-1SPT7LT7Z8"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ---------- Connect button logic ----------
+  const connectBtn = document.getElementById("connectBtn");
+  let connected = false;
+  let isConnected = false;
+  let unsubscribers = [];
+
+  connectBtn.addEventListener("click", () => {
+    if (!connected) {
+      // ---------- CONNECT ----------
+      connected = true;
+      isConnected = true;
+      connectBtn.innerText = "Connected";
+      connectBtn.style.background = "#034426"; 
+      localStorage.setItem("robotConnected", "true");
+
+      // References to humidity and temperature nodes
+      const humidityRef = ref(db, 'dht11/humidity');
+      const temperatureRef = ref(db, 'dht11/temperature');
+
+      // Real-time listener for humidity
+      const unsubHumidity = onValue(humidityRef, (snapshot) => {
+        if (!isConnected) return;
+        const humi = snapshot.val();
+        document.getElementById('humidity').innerHTML = humi + "%";
+      });
+      unsubscribers.push(unsubHumidity);
+
+      // Real-time listener for temperature
+      const unsubTemperature = onValue(temperatureRef, (snapshot) => {
+        if (!isConnected) return;
+        const temp = snapshot.val();
+        document.getElementById('temperature').innerHTML = temp + "&#8451;";
+      });
+      unsubscribers.push(unsubTemperature);
+
+      // garden tree count section's js
+      const sendBtn = document.getElementById("sendBtn");
+      if (sendBtn) {
+        sendBtn.addEventListener("click", () => {
+          if (!isConnected) return;
+          const treeValue = document.getElementById("treeInput").value;
+          if (treeValue !== "") {
+            set(ref(db, "garden/treeCount"), parseInt(treeValue))
+              .then(() => {
+                console.log("✅ Value sent to Firebase:", treeValue);
+                document.getElementById("treeInput").value = ""; // clear input
+              })
+              .catch((error) => {
+                console.error("❌ Error:", error);
+              });
+          } else {
+            alert("Please enter a value");
+          }
+        });
+      }
+
+      // robot status section's js
+      const ledRef = ref(db, "control/robotStatus");
+      const switchElement = document.querySelector(".card-sm input[type='checkbox']");
+      if (switchElement) {
+        switchElement.addEventListener("change", () => {
+          if (!isConnected) return;
+          const status = switchElement.checked ? 1 : 0;
+          set(ledRef, status)
+            .then(() => console.log("Firebase updated:", status))
+            .catch(err => console.error(err));
+        });
+
+        const unsubRobot = onValue(ledRef, (snapshot) => {
+          if (!isConnected) return;
+          const status = snapshot.val();
+          if (status !== null) {
+            switchElement.checked = (status === 1);
+          }
+        });
+        unsubscribers.push(unsubRobot);
+      }
+
+      console.log("✅ Connected to Firebase!");
+
+    } else {
+      // ---------- DISCONNECT ----------
+      connected = false;
+      isConnected = false;
+      connectBtn.innerText = "Connect";
+      connectBtn.style.background = "#4CAF50";
+      localStorage.setItem("robotConnected", "false");
+
+      // unsubscribe all listeners
+      unsubscribers.forEach(unsub => {
+        try { unsub(); } catch(e) { console.warn("Unsub error:", e); }
+      });
+      unsubscribers = [];
+
+      console.log("❌ Disconnected from Firebase!");
+    }
+  });
+
+  // ---------- Refresh এর পরে আগের state restore ----------
+  window.addEventListener("load", () => {
+    if (localStorage.getItem("robotConnected") === "true") {
+      connectBtn.click(); // আগের মতো আবার connect হবে
+    }
+  });
+
+// soil moisture gauge code here----------
+
+//const db = getDatabase();
+const moistureRef = ref(db, "moistureSensor/percent"); // তোমার Firebase path অনুযায়ী ঠিক করো
+
+// 2️⃣ Initial gauge value (default)
+let gaugeValue = 0; // শুরুতে 0, Firebase data এ update হবে
+
+// 3️⃣ Chart declare
+const gaugeChart = new Chart(document.getElementById('moistureGauge'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Moisture', 'Remaining'],
+        datasets: [{
+            data: [gaugeValue, 100 - gaugeValue],
+            backgroundColor: ['#00ff88', '#444'],
+            borderWidth: 0,
+            circumference: 180,
+            rotation: 270,
+            cutout: '70%',
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+        }
+    },
+    plugins: [{
+        id: 'needle',
+        afterDatasetDraw(chart, args, pluginOptions) {
+            const {ctx} = chart;
+            const angle = Math.PI + (Math.PI * (gaugeChart.data.datasets[0].data[0] / 100));
+            const cx = chart.getDatasetMeta(0).data[0].x;
+            const cy = chart.getDatasetMeta(0).data[0].y;
+
+            // Draw needle
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, -2);
+            ctx.lineTo(80, 0);
+            ctx.lineTo(0, 2);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+            ctx.restore();
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+        }
+    }]
+});
+
+// 4️⃣ Firebase থেকে real-time value নাও এবং gauge update করো
+onValue(moistureRef, (snapshot) => {
+    if (!isConnected) return; // ← শুধুমাত্র connected হলে update হবে
+    const value = snapshot.val();
+    if (value !== null && !isNaN(value)) {
+        gaugeChart.data.datasets[0].data[0] = value;
+        gaugeChart.data.datasets[0].data[1] = 100 - value;
+        gaugeChart.update();
+    }
+});
+
+// ---------- Temperature & Humidity Chart ----------
+
+// Chart declare
+const ctx2 = document.getElementById('tempHumChart').getContext('2d');
+const tempHumChart = new Chart(ctx2, {
+  type: 'line',
+  data: {
+    labels: [], // এখানে সময় আসবে
+    datasets: [
+      {
+        label: 'Temperature',
+        data: [],
+        borderColor: '#00ff88',
+        fill: false
+      },
+      {
+        label: 'Humidity',
+        data: [],
+        borderColor: '#888',
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#fff' } } },
+    scales: {
+      x: { ticks: { color: '#ccc' } },
+      y: { ticks: { color: '#ccc' } }
+    }
+  }
+});
+
+// Firebase references
+const humidityRef = ref(db, 'dht11/humidity');
+const temperatureRef = ref(db, 'dht11/temperature');
+
+// Realtime update from Firebase
+onValue(temperatureRef, (snapshot) => {
+  if (!isConnected) return;
+  const temp = snapshot.val();
+  const time = new Date().toLocaleTimeString();
+
+  // push new data
+  tempHumChart.data.labels.push(time);
+  tempHumChart.data.datasets[0].data.push(temp);
+
+  // max 10 points রাখবো
+  if (tempHumChart.data.labels.length > 10) {
+    tempHumChart.data.labels.shift();
+    tempHumChart.data.datasets[0].data.shift();
+    tempHumChart.data.datasets[1].data.shift();
+  }
+
+  tempHumChart.update();
+});
+
+onValue(humidityRef, (snapshot) => {
+  if (!isConnected) return;
+  const hum = snapshot.val();
+  
+  // সর্বশেষ ডেটা index এ humidity push করো
+  if (tempHumChart.data.datasets[1].data.length < tempHumChart.data.labels.length) {
+    // যদি temperature আগে add হয়ে থাকে
+    tempHumChart.data.datasets[1].data.push(hum);
+  } else {
+    // temperature update আসার আগেই humidity এলো
+    tempHumChart.data.datasets[1].data[tempHumChart.data.datasets[1].data.length - 1] = hum;
+  }
+
+  tempHumChart.update();
+});
+
+//water level section js
+
+const waterLevelRef = ref(db, "waterSensor/percent"); // আপনার path
+
+  const circle = document.querySelector(".card-mid svg circle:nth-child(2)");
+  const text = document.querySelector(".card-mid svg text");
+
+  onValue(waterLevelRef, (snapshot) => {
+    const level = snapshot.val(); // Firebase থেকে 0-100
+    const circumference = 2 * Math.PI * 50; // r = 50
+    const offset = circumference - (level / 100) * circumference;
+
+    circle.style.strokeDashoffset = offset; // circle update
+    text.textContent = `${level}%`;           // text update
+  });
+
+  // Battery status js code here
+
+  const batteryRef = ref(db, "voltageSensor/charge");
+
+  // Elements
+  const batteryLevel = document.getElementById("batteryLevel");
+  const batteryText = document.getElementById("batteryText");
+
+  // Real-time update
+  onValue(batteryRef, (snapshot) => {
+    if (snapshot.exists()) {
+      let value = snapshot.val(); // ধরুন value = 75
+      value = Math.max(0, Math.min(100, value)); // 0–100 এর বাইরে গেলে ঠিক করবে
+
+      // Smooth animation
+      batteryLevel.style.width = value + "%";
+      batteryText.textContent = value + "%";
+
+      // Dynamic color (optional)
+      if (value > 60) {
+        batteryLevel.style.background = "linear-gradient(to right, #4caf50, #76ff03)";
+      } else if (value > 30) {
+        batteryLevel.style.background = "linear-gradient(to right, #ffc107, #ffeb3b)";
+      } else {
+        batteryLevel.style.background = "linear-gradient(to right, #f44336, #ff5722)";
+      }
+    }
+  });
+
+
+  // Robot element
+  const robot = document.getElementById("robot");
+  robot.style.position = "absolute";
+  robot.style.width = "20px";
+  robot.style.height = "20px";
+  robot.style.borderRadius = "50%";
+  robot.style.background = "red";
+  robot.style.transition = "all 0.8s ease"; // smooth animation
+
+  // Get all tree marks
+  const marks = document.querySelectorAll(".mark");
+
+  // Function: Move Robot
+  function moveRobotToTree(treeNumber) {
+    const target = [...marks].find(m => m.innerText === String(treeNumber));
+    if (target) {
+      // Tree er position নেওয়া
+      const rect = target.getBoundingClientRect();
+      const gardenRect = document.querySelector(".garden").getBoundingClientRect();
+
+      const top = rect.top - gardenRect.top;
+      const left = rect.left - gardenRect.left;
+
+      // Robot কে সেই জায়গায় move করাও
+      robot.style.top = (top - 20) + "px";   // adjust value
+      robot.style.left = (left - 5) + "px";  // adjust value
+    }
+  }
+
+  // Firebase থেকে tree number পড়া
+  const treeRef = ref(db, "irSensor/markCount");  // ধরো এখানে number save করা আছে
+  onValue(treeRef, (snapshot) => {
+    const treeNumber = snapshot.val();
+    console.log("Robot Tree Number:", treeNumber);
+    moveRobotToTree(treeNumber);
+  });
+
+
+  //terminal's js code here........
+  const terminal = document.getElementById("terminal");
+
+  // Helper: Print to terminal
+  function logToTerminal(message) {
+    const p = document.createElement("p");
+    const time = new Date().toLocaleTimeString();
+    p.textContent = `> [${time}] ${message}`;
+    terminal.appendChild(p);
+    terminal.scrollTop = terminal.scrollHeight; // auto scroll
+  }
+
+  // Example integration with Firebase Listeners:
+  onValue(humidityRef, (snapshot) => {
+    if (!isConnected) return;
+    const humi = snapshot.val();
+    document.getElementById('humidity').innerHTML = humi + "%";
+    logToTerminal(`Humidity updated: ${humi}%`);
+  });
+
+  onValue(temperatureRef, (snapshot) => {
+    if (!isConnected) return;
+    const temp = snapshot.val();
+    document.getElementById('temperature').innerHTML = temp + "℃";
+    logToTerminal(`Temperature updated: ${temp}℃`);
+  });
+
+  onValue(moistureRef, (snapshot) => {
+    if (!isConnected) return;
+    const value = snapshot.val();
+    logToTerminal(`Soil moisture: ${value}%`);
+  });
+
+  onValue(waterLevelRef, (snapshot) => {
+    const level = snapshot.val();
+    logToTerminal(`Water tank level: ${level}%`);
+  });
+
+  onValue(batteryRef, (snapshot) => {
+    const value = snapshot.val();
+    logToTerminal(`Battery charge: ${value}%`);
+  });
+
+  // Robot position
+  onValue(treeRef, (snapshot) => {
+    const treeNumber = snapshot.val();
+    moveRobotToTree(treeNumber);
+    logToTerminal(`🤖 Robot moved near tree: ${treeNumber}`);
+  });
+
+  // Writing data (example: tree count)
+  sendBtn.addEventListener("click", () => {
+    const treeValue = document.getElementById("treeInput").value;
+    if (treeValue !== "") {
+      set(ref(db, "garden/treeCount"), parseInt(treeValue))
+        .then(() => {
+          logToTerminal(`✅ Tree count updated to: ${treeValue}`);
+        })
+        .catch((err) => {
+          logToTerminal(`❌ Error writing treeCount: ${err.message}`);
+        });
+    }
+  });
+
+  // Robot status update
+  switchElement.addEventListener("change", () => {
+    const status = switchElement.checked ? 1 : 0;
+    set(ledRef, status)
+      .then(() => logToTerminal(`Robot status changed to: ${status === 1 ? "ON" : "OFF"}`))
+      .catch(err => logToTerminal(`Error updating robot status: ${err.message}`));
+  });
+
+  // Connection logs
+  connectBtn.addEventListener("click", () => {
+    if (isConnected) {
+      logToTerminal("❌ Disconnected from Firebase.");
+    } else {
+      logToTerminal("✅ Connected to Firebase.");
+    }
+  });
+
+</script>
+
+</head>
+<body>
+  <header class="navbar-container">
+  <div class="navbar-left-section">
+    <div class="navbar-logo">
+      <i class="fa-solid fa-seedling"></i>
+      <span>AquaNova</span>
+    </div>
+    <nav class="navbar-links">
+      <a href="index.html" class="navbar-link">Home</a>
+      <a href="dashboard.html" class="navbar-link">Dashboard</a>
+      <a href="#" class="navbar-link">About us</a>
+    </nav>
+  </div>
+    <div class="navbar-datetime">
+      <span>01 July 2024 - 1:30 PM</span>
+    </div>
+  </div>
+</header>
+
+
+ <header>
+  <h3>AquaBot-X</h3>
+  <div class="abx-navbar-right-section">
+    <div class="abx-navbar-icons">
+      <i class="fa-solid fa-robot" id="abx-icon-robot"></i>
+      <i class="fa-solid fa-map-location" id="abx-icon-map"></i>
+      <i class="fa-solid fa-share" id="abx-icon-share"></i>
+    </div>
+  </div>
+</header>
+
+<!-- Robot Popup -->
+<div id="abx-window-robot" class="abx-navbar-window">
+  <h3 style="margin: 0 0 10px;">🤖 AquaBot-X</h3>
+  <button id="connectBtn" style="padding:6px 12px; border:none; border-radius:6px; background:#4CAF50; color:white; cursor:pointer;">
+    Connect
+  </button>
+</div>
+
+<!-- Map Popup -->
+<div id="abx-window-map" class="abx-navbar-window">
+  <h3 style="text-align: center;margin-top: -5px;">📍Location</h3>
+    <div class="garden">
+
+    <!-- Path -->
+    <!-- Horizontal path 1 to 4 -->
+<div class="path" style="top: 20px; left: 20px; width: 250px; height: 5px;"></div>
+
+<!-- Vertical path 4 to 5 -->
+<div class="path" style="top: 22px; left: 205px; width: 5px; height: 75px;margin-left: 60px;"></div>
+<!-- 8 to 1-->
+<div class="path" style="top: 22px; left: 20px; width: 5px; height: 75px;"></div>
+
+<!-- Horizontal path 5 to 8 -->
+<div class="path" style="top: 95px; left: 20px; width: 250px; height: 5px;"></div>
+
+
+    <!-- Trees with marks -->
+    <div class="tree" style="top: 35px; left: 40px;" data-name="Tree 1"></div>
+    <div class="mark" style="top: 28px; left: 42px;">1</div>
+
+    <div class="tree" style="top: 35px; left: 95px;" data-name="Tree 2"></div>
+    <div class="mark" style="top: 28px; left: 97px;">2</div>
+
+    <div class="tree" style="top: 35px; left: 150px;" data-name="Tree 3"></div>
+    <div class="mark" style="top: 28px; left: 152px;">3</div>
+
+    <div class="tree" style="top: 35px; left: 205px;" data-name="Tree 4"></div>
+    <div class="mark" style="top: 28px; left: 207px;">4</div>
+
+    <!-- Second row of trees -->
+    <div class="tree" style="top: 110px; left: 40px;" data-name="Tree 8"></div>
+    <div class="mark" style="top: 103px; left: 42px;">8</div>
+
+    <div class="tree" style="top: 110px; left: 95px;" data-name="Tree 7"></div>
+    <div class="mark" style="top: 103px; left: 97px;">7</div>
+
+    <div class="tree" style="top: 110px; left: 150px;" data-name="Tree 6"></div>
+    <div class="mark" style="top: 103px; left: 152px;">6</div>
+
+    <div class="tree" style="top: 110px; left: 205px;" data-name="Tree 5"></div>
+    <div class="mark" style="top: 103px; left: 207px;">5</div>
+
+    <!-- Robot -->
+    <div class="robot" id="robot"></div>
+
+</div>
+
+<script>
+// Example of moving robot to a tree based on number
+function moveRobotToTree(number) {
+    const mark = document.querySelector(`.mark:nth-of-type(${number})`);
+    const robot = document.getElementById('robot');
+    if(mark){
+        robot.style.left = mark.offsetLeft + "px";
+        robot.style.top = (mark.offsetTop - 20) + "px"; // slightly above mark
+    }
+}
+
+// Example usage: move robot to mark 1 after 1 second
+setTimeout(() => { moveRobotToTree(1); }, 1000);
+
+// Later you can connect Firebase and call moveRobotToTree(number) dynamically
+</script>
+</div>
+
+<!-- Share Popup -->
+<div id="abx-window-share" class="abx-navbar-window">
+  <h3 style="margin: 0 0 8px;">🔗 Share</h3>
+  <button id="abx-copy-btn" style="padding:6px 12px; border:none; border-radius:6px; background:#4CAF50; color:white; cursor:pointer;">
+    Copy Link
+  </button>
+</div>
+
+
+
+  <div class="container">
+    <div class="card card-sm-wide">
+      <h3>Soil Moisture</h3>
+      <canvas id="moistureGauge"></canvas>
+    </div>
+
+   <div class="card card-sm-wide">
+  <h3>Camera</h3>
+  <img src="http://10.235.223.136:81/stream" 
+       style="width:100%; height:100px; border-radius:8px; object-fit:cover;">
+</div>
+
+
+
+    <div class="card card-sm">
+  <h3>Current Temp</h3>
+  <p id="temperature" style="font-size: 2rem; color: #00ff88">-- °C</p>
+</div>
+
+<div class="card card-sm">
+  <h3>Humidity</h3>
+  <p id="humidity" style="font-size: 2rem; color: #00ff88">-- %</p>
+</div>
+
+
+    <div class="card card-mid">
+  <h3>Temperature & Humidity</h3>
+  <canvas id="tempHumChart" style="height: 100px;"></canvas>
+</div>
+
+   <!--water level section-->
+   <div class="card card-mid" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+  <h3>Water Level</h3>
+  <div style="position: relative; width: 120px; height: 120px;">
+    <svg width="120" height="120">
+      <circle cx="60" cy="60" r="50" stroke="#444" stroke-width="10" fill="none" />
+      <circle cx="60" cy="60" r="50" stroke="#00ff88" stroke-width="10" fill="none"
+              stroke-dasharray="314"
+              stroke-dashoffset="157"
+              transform="rotate(-90 60 60)" />
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20px" fill="#00ff88">50%</text>
+    </svg>
+  </div>
+</div>
+
+
+
+    <!-- Garden Tree Count - split into two side by side -->
+   <!-- Replace your existing Garden Tree Count section with this -->
+
+<!-- Terminal card -->
+<div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
+  <h3 style="color: #fff; margin-bottom: 0.3rem;">Terminal</h3>
+  <div id="terminal" class="terminal" tabindex="0" aria-label="Terminal window" role="region" 
+       style="background-color: #000; color: #00ff00; font-family: monospace; font-size: 0.85rem; 
+              border-radius: 5px; box-shadow: inset 0 0 10px #00ff00aa; padding: 0.5rem; height: 200px; overflow-y: auto;">
+    <p>> System idle...</p>
+  </div>
+</div>
+
+<!-- Garden Tree Count card -->
+<div class="card card-sm-wide" style="display: flex; flex-direction: column; justify-content: center;">
+  <h3>Garden Tree Count</h3>
+  <input id="treeInput" type="number" placeholder="Enter number of trees" 
+         style="width: 95.5%; padding: 0.5rem; border-radius: 5px; border: none; background-color: #1e1e1e; color: #00ff88; font-size: 1rem;">
+  <button id="sendBtn" 
+          style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #00ff88; border: none; border-radius: 5px; color: #000; cursor: pointer; font-weight: bold;">
+          Send
+  </button>
+</div>
+
+
+
+    <div class="card card-sm">
+      <h3>Robot Status</h3>
+      <label class="switch">
+        <input type="checkbox" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="card card-sm">
+  <h3>Battery Status</h3>
+  <div class="battery">
+    <div class="battery-icon">
+      <div id="batteryLevel" class="battery-level" style="width: 50%;"></div>
+      <div class="battery-head"></div>
+    </div>
+    <span id="batteryText">50%</span>
+  </div>
+</div>
+
+
+<script>
+let currentTime = null;
+
+// Navbar-এ কাস্টম ফরম্যাটে আপডেট
+function updateDateTime() {
+    if (!currentTime) return;
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let day = currentTime.getDate();
+    let month = months[currentTime.getMonth()];
+    let year = currentTime.getFullYear();
+
+    let hours = currentTime.getHours();
+    let minutes = currentTime.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    const formattedTime = `${day} ${month} ${year} - ${hours}:${minutes} ${ampm}`;
+
+    const datetimeDiv = document.querySelector('.navbar-datetime span');
+    if (datetimeDiv) {
+        datetimeDiv.textContent = formattedTime;
+    }
+
+    // প্রতি সেকেন্ডে tick
+    currentTime.setSeconds(currentTime.getSeconds() + 1);
+}
+
+// API থেকে একবার সময় নিয়ে আসা এবং **instantly update**
+async function fetchInternetTime() {
+    try {
+        const response = await fetch('https://worldtimeapi.org/api/ip');
+        const data = await response.json();
+        currentTime = new Date(data.datetime);
+        updateDateTime(); // API আসার সাথে সাথে অবিলম্বে দেখানো
+    } catch (error) {
+        console.error("Time fetch failed:", error);
+        currentTime = new Date();
+        updateDateTime(); // ব্যর্থ হলে লোকাল টাইম দেখানো
+    }
+}
+
+// প্রথমবার API কল
+fetchInternetTime();
+
+// প্রতি সেকেন্ডে আপডেট
+setInterval(updateDateTime, 1000);
+
+// প্রতি 5 মিনিটে API থেকে রিফ্রেশ
+setInterval(fetchInternetTime, 5 * 60 * 1000);
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const iconMap = {
+      "abx-icon-robot": document.getElementById("abx-window-robot"),
+      "abx-icon-map": document.getElementById("abx-window-map"),
+      "abx-icon-share": document.getElementById("abx-window-share"),
+    };
+
+    let activeWindow = null;
+
+    Object.keys(iconMap).forEach(iconId => {
+      const icon = document.getElementById(iconId);
+      const targetWindow = iconMap[iconId];
+
+      icon.addEventListener("click", () => {
+        if (activeWindow === targetWindow) {
+          targetWindow.style.display = "none";
+          activeWindow = null;
+          return;
+        }
+
+        // সব popup hide করো
+        Object.values(iconMap).forEach(w => w.style.display = "none");
+
+        // popup দেখাও
+        targetWindow.style.display = "block";
+        const rect = icon.getBoundingClientRect();
+
+        // box-এর right edge = icon-এর right edge
+        targetWindow.style.left = (rect.right - targetWindow.offsetWidth) + "px";
+        targetWindow.style.top = (rect.bottom + window.scrollY + 5) + "px";
+
+        activeWindow = targetWindow;
+
+        // Map init
+        if (iconId === "abx-icon-map" && !targetWindow.dataset.loaded) {
+          const map = L.map('map').setView([23.8103, 90.4125], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+            maxZoom: 18,
+          }).addTo(map);
+          L.marker([23.8103, 90.4125]).addTo(map)
+            .bindPopup('AquaBot-X Location')
+            .openPopup();
+          targetWindow.dataset.loaded = "true";
+        }
+      });
+    });
+
+    // Copy Link button
+    const copyBtn = document.getElementById("abx-copy-btn");
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText("https://mahmudul626.github.io/aquabot-x_project/").then(() => {
+        copyBtn.innerText = "Copied!";
+        setTimeout(() => copyBtn.innerText = "Copy Link", 2000);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
